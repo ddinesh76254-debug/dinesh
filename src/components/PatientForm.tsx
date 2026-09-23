@@ -38,6 +38,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
   const [doctorId, setDoctorId] = useState<string>(initialDoctorId ? String(initialDoctorId) : '');
 
   // Dynamic doctor fetching state
+  const [allDoctors, setAllDoctors] = useState<Doctor[]>([]);
   const [availableDoctors, setAvailableDoctors] = useState<Doctor[]>([]);
   const [isLoadingDoctors, setIsLoadingDoctors] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,22 +55,43 @@ export const PatientForm: React.FC<PatientFormProps> = ({
   } | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  // Sync initial department if changed from parent
+  // Load all doctors on mount for rapid lookup and direct selection
+  useEffect(() => {
+    let isMounted = true;
+    api.getDoctors().then((docs) => {
+      if (isMounted) {
+        setAllDoctors(docs);
+      }
+    }).catch(err => console.error('Failed to load doctor roster:', err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Sync initial department and doctor if changed from parent
   useEffect(() => {
     if (initialDepartment) {
       setDepartment(initialDepartment);
     }
   }, [initialDepartment]);
 
-  // Dynamically fetch doctors from backend API whenever department changes
   useEffect(() => {
+    if (initialDoctorId) {
+      setDoctorId(String(initialDoctorId));
+    }
+  }, [initialDoctorId]);
+
+  // Dynamically fetch / filter doctors whenever department or allDoctors change
+  useEffect(() => {
+    let isMounted = true;
+
     if (!department) {
-      setAvailableDoctors([]);
-      setDoctorId('');
+      // If no department selected yet, available doctors is all hospital doctors
+      setAvailableDoctors(allDoctors);
       return;
     }
 
-    let isMounted = true;
     const fetchDoctors = async () => {
       setIsLoadingDoctors(true);
       setServerError(null);
@@ -77,17 +99,30 @@ export const PatientForm: React.FC<PatientFormProps> = ({
         const docs = await api.getDoctorsByDepartment(department);
         if (isMounted) {
           setAvailableDoctors(docs);
-          // If we had an initial doctor ID and it matches this department, preserve it
-          if (initialDoctorId && docs.some(d => d.id === initialDoctorId)) {
-            setDoctorId(String(initialDoctorId));
-          } else {
-            setDoctorId('');
-          }
+          // If we had a selected doctor and it matches this department, preserve it
+          // Otherwise, if there is a matching doctor from initialDoctorId or only one doctor, keep or auto-select
+          setDoctorId((prevDocId) => {
+            if (prevDocId && docs.some(d => String(d.id) === String(prevDocId))) {
+              return prevDocId;
+            }
+            if (initialDoctorId && docs.some(d => d.id === initialDoctorId)) {
+              return String(initialDoctorId);
+            }
+            // If department has only 1 doctor, auto-select for convenience
+            if (docs.length === 1) {
+              return String(docs[0].id);
+            }
+            return '';
+          });
         }
       } catch (err: any) {
         if (isMounted) {
           console.error('Failed to load doctors:', err);
-          setServerError('Could not fetch doctors for this department from the backend.');
+          // Fallback to in-memory filtering from allDoctors if available
+          const filtered = allDoctors.filter(d => 
+            (d.department_name || '').toLowerCase() === department.toLowerCase()
+          );
+          setAvailableDoctors(filtered);
         }
       } finally {
         if (isMounted) setIsLoadingDoctors(false);
@@ -98,7 +133,25 @@ export const PatientForm: React.FC<PatientFormProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [department, initialDoctorId]);
+  }, [department, initialDoctorId, allDoctors]);
+
+  // Handle direct doctor selection: auto-syncs the department as well!
+  const handleDoctorChange = (selectedId: string) => {
+    setDoctorId(selectedId);
+    if (errors.doctorId) setErrors(prev => ({ ...prev, doctorId: '' }));
+
+    if (!selectedId) return;
+
+    // Find the doctor in available or all doctors
+    const doc = (availableDoctors.length > 0 ? availableDoctors : allDoctors).find(
+      d => String(d.id) === String(selectedId)
+    );
+
+    if (doc && doc.department_name && doc.department_name !== department) {
+      setDepartment(doc.department_name);
+      if (errors.department) setErrors(prev => ({ ...prev, department: '' }));
+    }
+  };
 
   // Form Validation
   const validate = (): boolean => {
@@ -450,7 +503,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
               )}
             </div>
 
-            {/* 5. Doctor Name (Dynamically Loaded based on Department) */}
+            {/* 5. Doctor Name (Dynamically Loaded based on Department or Direct Selection) */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label htmlFor="doctor" className="block text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -462,6 +515,11 @@ export const PatientForm: React.FC<PatientFormProps> = ({
                     Fetching doctors from database...
                   </span>
                 )}
+                {department && !isLoadingDoctors && (
+                  <span className="text-[11px] font-semibold text-slate-500">
+                    {availableDoctors.length} specialist{availableDoctors.length === 1 ? '' : 's'} in {department}
+                  </span>
+                )}
               </div>
               
               <div className="relative">
@@ -471,43 +529,87 @@ export const PatientForm: React.FC<PatientFormProps> = ({
                 <select
                   id="doctor"
                   value={doctorId}
-                  disabled={!department || isLoadingDoctors || availableDoctors.length === 0}
-                  onChange={(e) => {
-                    setDoctorId(e.target.value);
-                    if (errors.doctorId) setErrors(prev => ({ ...prev, doctorId: '' }));
-                  }}
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm font-medium transition-all bg-white disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed ${
+                  disabled={isLoadingDoctors}
+                  onChange={(e) => handleDoctorChange(e.target.value)}
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm font-medium transition-all bg-white ${
                     errors.doctorId 
                       ? 'border-red-400 bg-red-50/30 text-red-900 focus:ring-2 focus:ring-red-300' 
                       : 'border-slate-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 text-slate-900'
                   }`}
                 >
-                  {!department ? (
-                    <option value="">-- Select department first above --</option>
-                  ) : isLoadingDoctors ? (
-                    <option value="">Querying doctors from backend...</option>
-                  ) : availableDoctors.length === 0 ? (
-                    <option value="">No doctors currently available for this specialty</option>
-                  ) : (
-                    <>
-                      <option value="">-- Choose Doctor ({availableDoctors.length} available) --</option>
-                      {availableDoctors.map((doc) => (
-                        <option key={doc.id} value={doc.id}>
-                          {doc.doctor_name} — {doc.specialization}
-                        </option>
-                      ))}
-                    </>
-                  )}
+                  <option value="">
+                    {department 
+                      ? `-- Choose Doctor for ${department} (${availableDoctors.length} available) --`
+                      : `-- Choose Any Doctor (${allDoctors.length > 0 ? allDoctors.length : 12} available) --`
+                    }
+                  </option>
+                  {(availableDoctors.length > 0 ? availableDoctors : allDoctors).map((doc) => (
+                    <option key={doc.id} value={doc.id}>
+                      {doc.doctor_name} — {doc.department_name || 'Specialist'} ({doc.specialization})
+                    </option>
+                  ))}
                 </select>
               </div>
               
               {errors.doctorId && (
-                <p className="mt-1 text-xs text-red-600">{errors.doctorId}</p>
+                <p className="mt-1 text-xs text-red-600 font-medium">{errors.doctorId}</p>
               )}
 
-              <p className="mt-1.5 text-[11px] text-slate-500">
-                Note: Doctor roster is queried dynamically via <code className="text-sky-600 bg-sky-50 px-1 py-0.5 rounded">/api/doctors/department/:dept</code> upon department selection.
-              </p>
+              {/* Quick Doctor Select Chips */}
+              <div className="mt-2.5">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                  {department ? `Quick Select: Doctors in ${department}` : 'Quick Select: Featured Specialists'}
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(availableDoctors.length > 0 ? availableDoctors : allDoctors.slice(0, 6)).map((doc) => {
+                    const isSelected = String(doctorId) === String(doc.id);
+                    return (
+                      <button
+                        key={doc.id}
+                        type="button"
+                        onClick={() => handleDoctorChange(String(doc.id))}
+                        className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                          isSelected
+                            ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
+                            : 'bg-slate-50 hover:bg-sky-50 text-slate-700 hover:text-sky-800 border-slate-200'
+                        }`}
+                      >
+                        <Stethoscope className="w-3 h-3" />
+                        <span>{doc.doctor_name}</span>
+                        {!department && (
+                          <span className={`text-[10px] ${isSelected ? 'text-sky-100' : 'text-slate-400'}`}>
+                            ({doc.department_name})
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Informative helper box showing current doctor status */}
+              {doctorId ? (
+                (() => {
+                  const currentDoc = (availableDoctors.length > 0 ? availableDoctors : allDoctors).find(
+                    d => String(d.id) === String(doctorId)
+                  );
+                  return currentDoc ? (
+                    <div className="mt-3 p-3 rounded-xl bg-sky-50/80 border border-sky-200 flex items-start gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+                      <div className="text-xs">
+                        <span className="font-bold text-sky-950">Selected Doctor: {currentDoc.doctor_name}</span>
+                        <div className="text-sky-800 mt-0.5 font-medium">
+                          Department: <strong className="text-sky-900">{currentDoc.department_name}</strong> &nbsp;•&nbsp; {currentDoc.specialization}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null;
+                })()
+              ) : (
+                <p className="mt-2 text-[11px] text-slate-500">
+                  💡 <span className="font-semibold text-slate-700">Tip:</span> You can either pick a department first or select any doctor directly from the dropdown or quick chips above. The department will automatically sync.
+                </p>
+              )}
             </div>
 
             {/* 6 & 7. Submit and Reset Buttons */}

@@ -17,6 +17,38 @@ document.addEventListener('DOMContentLoaded', () => {
         dateInput.value = today;
     }
 
+    let allDoctorsList = [];
+
+    // Preload all doctors for instant selection
+    async function initDoctors() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/doctors`);
+            const data = await res.json();
+            if (data.success && data.data) {
+                allDoctorsList = data.data;
+                populateDoctorDropdown(allDoctorsList);
+            }
+        } catch (e) {
+            console.warn('Could not preload all doctors:', e);
+        }
+    }
+    initDoctors();
+
+    function populateDoctorDropdown(doctors, selectedDept = '') {
+        if (!doctorSelect) return;
+        doctorSelect.disabled = false;
+        doctorSelect.innerHTML = selectedDept 
+            ? `<option value="">-- Choose Doctor for ${selectedDept} (${doctors.length} available) --</option>`
+            : `<option value="">-- Choose Any Doctor (${doctors.length} available) --</option>`;
+
+        doctors.forEach(doctor => {
+            const option = document.createElement('option');
+            option.value = doctor.id;
+            option.textContent = `${doctor.doctor_name} — ${doctor.department_name || ''} (${doctor.specialization})`;
+            doctorSelect.appendChild(option);
+        });
+    }
+
     // Load departments or set default dynamic listener
     if (departmentSelect) {
         departmentSelect.addEventListener('change', async (e) => {
@@ -25,18 +57,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Direct doctor selection auto-syncs department
+    if (doctorSelect) {
+        doctorSelect.addEventListener('change', (e) => {
+            const chosenId = Number(e.target.value);
+            if (!chosenId) return;
+            const chosenDoc = allDoctorsList.find(d => d.id === chosenId);
+            if (chosenDoc && chosenDoc.department_name && departmentSelect) {
+                if (departmentSelect.value !== chosenDoc.department_name) {
+                    departmentSelect.value = chosenDoc.department_name;
+                }
+            }
+        });
+    }
+
     // Function to fetch doctors dynamically based on department
     async function loadDoctorsForDepartment(departmentName) {
         if (!doctorSelect) return;
 
-        doctorSelect.innerHTML = '<option value="">Loading doctors...</option>';
-        doctorSelect.disabled = true;
-
         if (!departmentName) {
-            doctorSelect.innerHTML = '<option value="">Select Department first</option>';
-            doctorSelect.disabled = true;
+            populateDoctorDropdown(allDoctorsList);
             return;
         }
+
+        doctorSelect.innerHTML = '<option value="">Loading doctors...</option>';
+        doctorSelect.disabled = true;
 
         try {
             // Dynamic fetch from backend API
@@ -44,23 +89,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (data.success && data.data && data.data.length > 0) {
-                doctorSelect.innerHTML = '<option value="">-- Choose a Doctor --</option>';
-                data.data.forEach(doctor => {
-                    const option = document.createElement('option');
-                    option.value = doctor.id;
-                    option.textContent = `${doctor.doctor_name} (${doctor.specialization})`;
-                    doctorSelect.appendChild(option);
-                });
-                doctorSelect.disabled = false;
+                populateDoctorDropdown(data.data, departmentName);
             } else {
                 doctorSelect.innerHTML = '<option value="">No doctors available for this department</option>';
-                doctorSelect.disabled = true;
+                doctorSelect.disabled = false;
             }
         } catch (error) {
             console.error('Error fetching doctors:', error);
-            doctorSelect.innerHTML = '<option value="">Failed to load doctors</option>';
-            doctorSelect.disabled = true;
-            showAlert('Could not load doctors from backend server. Please ensure the backend is running.', 'danger');
+            // Fallback to local filter if network failed
+            const localFiltered = allDoctorsList.filter(d => (d.department_name || '').toLowerCase() === departmentName.toLowerCase());
+            if (localFiltered.length > 0) {
+                populateDoctorDropdown(localFiltered, departmentName);
+            } else {
+                doctorSelect.innerHTML = '<option value="">Failed to load doctors</option>';
+                showAlert('Could not load doctors from backend server. Please ensure the backend is running.', 'danger');
+            }
         }
     }
 
