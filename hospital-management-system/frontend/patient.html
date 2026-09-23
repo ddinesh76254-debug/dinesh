@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration & Appointment | City Care Hospital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="brand-logo">
+                <div class="brand-icon">+</div>
+                <span>City Care Hospital</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="index.html#departments" class="nav-link">Departments</a></li>
+                <li><a href="index.html#doctors" class="nav-link">Doctors</a></li>
+                <li><a href="appointment.html" class="nav-link">My Appointment</a></li>
+                <li><a href="login.html" class="nav-link">Admin Portal</a></li>
+                <li><a href="patient.html" class="btn-book active">Book Appointment</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-subtitle">Online Registration</div>
+                <h1 class="section-title">Patient Registration & Appointment Form</h1>
+                <p class="section-description">Fill out your details below to schedule a consultation with our specialist doctors. Doctor options load automatically based on selected specialty.</p>
+            </div>
+
+            <!-- Global Alert Container -->
+            <div id="alert-container" style="max-width: 720px; margin: 0 auto;"></div>
+
+            <!-- Booking Success Card (Initially Hidden) -->
+            <div id="bookingSuccessCard" style="display: none; max-width: 720px; margin: 0 auto 2rem; background: #ecfdf5; border: 1px solid #10b981; border-radius: 16px; padding: 2rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
+                    <div style="width: 40px; height: 40px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">✓</div>
+                    <div>
+                        <h3 style="color: #065f46; font-size: 1.25rem;">Appointment Registered Successfully!</h3>
+                        <p style="color: #047857; font-size: 0.9rem;">Your consultation request has been recorded in our hospital database.</p>
+                    </div>
+                </div>
+
+                <div style="background: white; border-radius: 12px; padding: 1.25rem; border: 1px solid #a7f3d0; margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <span style="font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Appointment ID</span>
+                        <div id="displayAppointmentId" style="font-size: 1.5rem; font-weight: 800; color: #0284c7;">#101</div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Status</span>
+                        <div><span id="displayStatus" class="status-badge pending">Pending</span></div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Patient Name</span>
+                        <div id="displayPatientName" style="font-weight: 600; color: #0f172a;">-</div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Scheduled Date</span>
+                        <div id="displayApptDate" style="font-weight: 600; color: #0f172a;">-</div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Department</span>
+                        <div id="displayDeptName" style="font-weight: 600; color: #0284c7;">-</div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Attending Doctor</span>
+                        <div id="displayDoctorName" style="font-weight: 600; color: #0f172a;">-</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button onclick="window.print()" class="btn-secondary" style="font-size: 0.85rem;">Print Receipt</button>
+                    <a href="appointment.html" class="btn-primary" style="font-size: 0.85rem;">View in Appointments Page &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Main Patient Registration Form -->
+            <div class="form-card">
+                <form id="patientRegistrationForm" novalidate>
+                    <!-- 1. Patient Name -->
+                    <div class="form-group">
+                        <label for="name" class="form-label">
+                            Patient Full Name <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            class="form-control" 
+                            placeholder="e.g. Ramesh Patel" 
+                            required
+                        >
+                        <div class="form-feedback">Patient name is required (minimum 2 characters).</div>
+                    </div>
+
+                    <!-- 2. Date -->
+                    <div class="form-group">
+                        <label for="date" class="form-label">
+                            Appointment Date <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="date" 
+                            id="date" 
+                            name="date" 
+                            class="form-control" 
+                            required
+                        >
+                        <div class="form-feedback">Please enter a valid appointment date.</div>
+                    </div>
+
+                    <!-- 3. Address -->
+                    <div class="form-group">
+                        <label for="address" class="form-label">
+                            Residential Address <span class="required">*</span>
+                        </label>
+                        <textarea 
+                            id="address" 
+                            name="address" 
+                            class="form-control" 
+                            rows="3" 
+                            placeholder="Enter full street address, city, and pincode" 
+                            required
+                        ></textarea>
+                        <div class="form-feedback">Residential address is required.</div>
+                    </div>
+
+                    <!-- 4. Doctor Department / Specialty -->
+                    <div class="form-group">
+                        <label for="department" class="form-label">
+                            Doctor Department / Specialty <span class="required">*</span>
+                        </label>
+                        <select id="department" name="department" class="form-select" required>
+                            <option value="">-- Select Department / Specialty --</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="General Medicine">General Medicine</option>
+                            <option value="Orthopedics">Orthopedics</option>
+                            <option value="Dermatology">Dermatology</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Neurology">Neurology</option>
+                            <option value="ENT">ENT</option>
+                            <option value="Gynecology">Gynecology</option>
+                            <option value="General Surgery">General Surgery</option>
+                        </select>
+                        <div class="form-feedback">Please select a department.</div>
+                    </div>
+
+                    <!-- 5. Doctor Name (Dynamically loaded based on department) -->
+                    <div class="form-group">
+                        <label for="doctor" class="form-label">
+                            Doctor Name <span class="required">*</span>
+                        </label>
+                        <select id="doctor" name="doctor" class="form-select" disabled required>
+                            <option value="">-- First choose a department above --</option>
+                        </select>
+                        <div class="form-feedback">Please select a doctor.</div>
+                        <small style="color: #64748b; font-size: 0.8rem; margin-top: 4px; display: block;">
+                            Doctors are fetched dynamically from the database based on your selected department.
+                        </small>
+                    </div>
+
+                    <!-- 6. Submit and Reset Buttons -->
+                    <div class="form-actions">
+                        <button type="submit" id="submitBtn" class="btn-primary" style="flex: 2;">
+                            Submit Registration & Book
+                        </button>
+                        <button type="button" id="resetBtn" class="btn-reset" style="flex: 1;">
+                            Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                &copy; 2026 City Care Hospital Management System. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/patient.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Hospital Management System",
+  "description": "Comprehensive full-stack Hospital Management System featuring patient registration, dynamic department and doctor appointment booking, doctor management, and real-time administrative dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

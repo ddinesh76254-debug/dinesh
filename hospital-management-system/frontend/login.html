@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | City Care Hospital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);">
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="brand-logo">
+                <div class="brand-icon">+</div>
+                <span>City Care Hospital</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="patient.html" class="nav-link">Book Appointment</a></li>
+                <li><a href="appointment.html" class="nav-link">Appointments</a></li>
+                <li><a href="login.html" class="nav-link active">Admin Portal</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="section" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 180px);">
+        <div class="container" style="max-width: 460px;">
+            <div id="alert-container"></div>
+
+            <div class="form-card" style="padding: 2.5rem; border-radius: 20px; box-shadow: 0 15px 35px -5px rgba(2, 132, 199, 0.15);">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="width: 52px; height: 52px; background: #e0f2fe; color: #0284c7; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem;">
+                        🔒
+                    </div>
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Hospital Administrator</h2>
+                    <p style="color: #64748b; font-size: 0.875rem;">Sign in to access patient records, doctor management, and appointment controls.</p>
+                </div>
+
+                <form id="adminLoginForm" novalidate>
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="form-control" 
+                            placeholder="e.g. admin" 
+                            value="admin"
+                            required
+                        >
+                        <div class="form-feedback">Username is required.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-control" 
+                            placeholder="Enter admin password" 
+                            value="admin123"
+                            required
+                        >
+                        <div class="form-feedback">Password is required.</div>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 0.75rem; margin-bottom: 1.5rem; font-size: 0.8rem; color: #475569;">
+                        <strong>Default Credentials:</strong><br>
+                        Username: <code style="color: #0284c7;">admin</code> &nbsp;|&nbsp; Password: <code style="color: #0284c7;">admin123</code>
+                    </div>
+
+                    <button type="submit" id="loginBtn" class="btn-primary" style="width: 100%; padding: 0.85rem;">
+                        Login to Admin Dashboard
+                    </button>
+                </form>
+
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="index.html" style="color: #64748b; font-size: 0.85rem; text-decoration: none;">&larr; Back to Hospital Homepage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments Directory | City Care Hospital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="brand-logo">
+                <div class="brand-icon">+</div>
+                <span>City Care Hospital</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="index.html#departments" class="nav-link">Departments</a></li>
+                <li><a href="index.html#doctors" class="nav-link">Doctors</a></li>
+                <li><a href="appointment.html" class="nav-link active">My Appointment</a></li>
+                <li><a href="login.html" class="nav-link">Admin Portal</a></li>
+                <li><a href="patient.html" class="btn-book">Book Appointment</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-subtitle">Track & Review</div>
+                <h1 class="section-title">Hospital Appointments</h1>
+                <p class="section-description">Look up scheduled consultations, review doctor assignments, and check real-time approval status.</p>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div style="background: white; border-radius: 12px; border: 1px solid var(--neutral-200); padding: 1.25rem; margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                <div style="display: flex; gap: 0.75rem; flex: 1; min-width: 280px;">
+                    <input 
+                        type="text" 
+                        id="searchAppointmentInput" 
+                        class="form-control" 
+                        placeholder="Search by Patient Name, Doctor, Department, or ID..."
+                    >
+                    <button type="button" id="searchBtn" class="btn-primary" style="padding: 0.75rem 1.25rem;">
+                        Search
+                    </button>
+                </div>
+
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <label for="statusFilter" style="font-size: 0.85rem; font-weight: 600; color: #475569; white-space: nowrap;">Status:</label>
+                    <select id="statusFilter" class="form-select" style="width: 150px; padding: 0.5rem 0.75rem;">
+                        <option value="all">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                    <a href="patient.html" class="btn-book" style="padding: 0.5rem 1rem; font-size: 0.85rem;">+ New Booking</a>
+                </div>
+            </div>
+
+            <!-- Appointments Table Card -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">Scheduled Appointments List</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Appointment ID</th>
+                                <th>Patient Name</th>
+                                <th>Date</th>
+                                <th>Department</th>
+                                <th>Doctor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointmentsTableBody">
+                            <!-- Populated via appointment.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                &copy; 2026 City Care Hospital Management System. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/appointment.js"></script>
+</body>
+</html>

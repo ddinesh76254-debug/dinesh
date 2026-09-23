@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | City Care Hospital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="background: #f8fafc;">
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="brand-logo">
+                <div class="brand-icon">+</div>
+                <span>City Care Hospital &mdash; Admin Portal</span>
+            </a>
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <span style="font-size: 0.9rem; color: #475569;">
+                    Logged in as: <strong id="adminUserName" style="color: #0284c7;">admin</strong>
+                </span>
+                <a href="index.html" class="nav-link" target="_blank">View Site ↗</a>
+                <button id="logoutBtn" class="btn-sm btn-delete" style="padding: 0.45rem 1rem;">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="section" style="padding-top: 2rem;">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 style="font-size: 1.85rem; margin-bottom: 0.25rem;">Hospital Operations Dashboard</h1>
+                    <p style="color: #64748b; font-size: 0.95rem;">Real-time clinical management, doctor schedules, patient intake, and appointment approvals.</p>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button id="addDoctorBtn" class="btn-primary" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">
+                        + Add Doctor
+                    </button>
+                    <a href="patient.html" class="btn-secondary" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;" target="_blank">
+                        + Register Patient
+                    </a>
+                </div>
+            </div>
+
+            <!-- Global Alert Container -->
+            <div id="alert-container"></div>
+
+            <!-- 1. Metric Cards (Total Patients, Total Doctors, Total Appointments, Pending Appointments) -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-title">Total Patients</div>
+                        <div class="stat-value" id="statPatients">0</div>
+                    </div>
+                    <div class="stat-icon blue">👥</div>
+                </div>
+
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-title">Total Doctors</div>
+                        <div class="stat-value" id="statDoctors">0</div>
+                    </div>
+                    <div class="stat-icon green">🩺</div>
+                </div>
+
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-title">Total Appointments</div>
+                        <div class="stat-value" id="statAppointments">0</div>
+                    </div>
+                    <div class="stat-icon purple">📅</div>
+                </div>
+
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-title">Pending Appointments</div>
+                        <div class="stat-value" id="statPending" style="color: #d97706;">0</div>
+                    </div>
+                    <div class="stat-icon amber">⏳</div>
+                </div>
+            </div>
+
+            <!-- 2. Appointments Management Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3 class="table-title">Appointment Requests</h3>
+                        <p style="font-size: 0.85rem; color: #64748b;">Review and approve/cancel incoming patient registrations.</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient Name</th>
+                                <th>Date</th>
+                                <th>Department</th>
+                                <th>Doctor</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminAppointmentsTable">
+                            <!-- Populated via admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. Doctors Management Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3 class="table-title">Medical Specialists & Doctors</h3>
+                        <p style="font-size: 0.85rem; color: #64748b;">Manage roster of practicing doctors and department assignments.</p>
+                    </div>
+                    <button onclick="window.openAddDoctorModal()" class="btn-primary" style="font-size: 0.85rem; padding: 0.45rem 1rem;">
+                        + New Doctor
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Doctor Name</th>
+                                <th>Department</th>
+                                <th>Specialization</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminDoctorsTable">
+                            <!-- Populated via admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. Patients Directory Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3 class="table-title">Registered Patients Directory</h3>
+                        <p style="font-size: 0.85rem; color: #64748b;">Comprehensive patient record roster.</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient Name</th>
+                                <th>Registration Date</th>
+                                <th>Residential Address</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminPatientsTable">
+                            <!-- Populated via admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Doctor Modal -->
+    <div id="doctorModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle" style="font-size: 1.25rem;">Add New Doctor</h3>
+                <button id="closeDoctorModal" class="modal-close">&times;</button>
+            </div>
+            <form id="doctorForm">
+                <input type="hidden" id="doctorId">
+                
+                <div class="form-group">
+                    <label for="doctorName" class="form-label">Doctor Name <span class="required">*</span></label>
+                    <input type="text" id="doctorName" class="form-control" placeholder="e.g. Dr. Ramesh Gupta" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="doctorDepartment" class="form-label">Department <span class="required">*</span></label>
+                    <select id="doctorDepartment" class="form-select" required>
+                        <option value="">-- Select Department --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="doctorSpecialization" class="form-label">Specialization / Clinical Focus <span class="required">*</span></label>
+                    <input type="text" id="doctorSpecialization" class="form-control" placeholder="e.g. Pediatric Cardiology & Interventions" required>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" onclick="document.getElementById('doctorModal').classList.remove('active')" class="btn-secondary">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Save Doctor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
